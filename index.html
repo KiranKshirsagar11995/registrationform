@@ -7,7 +7,6 @@
   <style media="screen">
     body {
       background-image: url(image3.jpg);
-
     }
 
     .container {
@@ -56,6 +55,28 @@
       if ((event.keyCode < 65 || event.keyCode > 90) &&
         event.keyCode != 32 && event.keyCode != 8 && event.keyCode != 9 &&
         event.keyCode != 37 && event.keyCode != 39) {
+        return false;
+      }
+      let name = document.getElementById('fullName').value;
+      // if name is blank then we ristrict to enter SPACE (keycode 32)
+      if (name == "" && event.keyCode == 32) {
+        return false;
+      }
+      let nameCharArray = name.split("");
+      let lastChar = nameCharArray.pop();
+      // dont allow space after SPACE
+      if (name != "" && lastChar == " " && event.key == " ") {
+        return false;
+      }
+
+      let nameArray = name.split(" ");
+      console.log("nameArray:    " + nameArray);
+      if (event.key == " " && nameArray.some(word => word.length < 4)) {
+        alert("Enter valid Name [Each word should contain at least 4 character]");
+        return false;
+      }
+      // dont allow SPACE after two words
+      if (nameArray.length == 2 && event.key == " ") {
         return false;
       }
     }
@@ -155,26 +176,11 @@
       // console.log("document" + document.forms);
       // console.log("document" + JSON.stringify(document.forms.myForm.value));
       let fullName = document.forms.myForm.fullName.value
+      // Remove white_spaces
       fullName = fullName.trim();
       // IF Full Name EMPTY
       if (fullName == "") {
         alert("Please enter the Name [Name Should not EMPTY]")
-        return false;
-      }
-
-      // IF words greater than 2
-      let fullNameArray = fullName.split(" ");
-      if (fullNameArray.length > 2) {
-        alert("Enter valid Name [Max two Words allow]")
-        return false;
-      }
-
-      // IF CHARACTER of WORD less than 4
-      let checkChar = fullNameArray.some(function(word) {
-        return word.length < 4;
-      })
-      if (checkChar) {
-        alert("Enter valid Name [Each word with min 4 chars]")
         return false;
       }
 
@@ -258,7 +264,7 @@
     <form class="" name=myForm action="http://pixel6.co/" method="post" autocomplete="off" onsubmit="return validateForm()">
       <div class="">
         <label for="FullName">FullName:-</label><br>
-        <input type="text" name="fullName" value="" placeholder="Fullname" onkeydown="return validateFullName(event)"><br>
+        <input id="fullName" type="text" name="fullName" value="" placeholder="Fullname" onkeydown="return validateFullName(event)"><br>
 
         <label for="Email">Email:-</label><br>
         <input type="text" name="email" value="" placeholder="Email"><br>
