@@ -48,13 +48,18 @@
      * 601 - 900 : Maharashtra
      * 901 - 999 : Gujrat
      */
+     let DIGITS = [0,1,2,3,4,5,6,7,8,9];
+     let ALPHABETS_CAP = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+     let ALPHABETS = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
 
+     let FULLNAME_SPECIAL_CHAR = [' ','Backspace','Tab','Enter','Delete','ArrowRight','ArrowLeft','ArrowUp','ArrowDown'];
+     let EMAIL_SPECIAL_CHAR = ['@','.','-','_','Backspace','Tab','Enter','Delete','ArrowRight','ArrowLeft','ArrowUp','ArrowDown'];
+     let PHONENO_SPECIAL_CHAR = ['-','Backspace','Tab','Enter']
+     // Real time validation on FullName
     function validateFullName(event) {
-      // console.log('event: ', event);
-      // Allow only Alphabets keyCode (between 65 - 90) and SPACE(32) and BACKSPACE(8) and TAB(9)
-      if ((event.keyCode < 65 || event.keyCode > 90) &&
-        event.keyCode != 32 && event.keyCode != 8 && event.keyCode != 9 &&
-        event.keyCode != 37 && event.keyCode != 39) {
+      // Allow CHARACTER & FullName specific Special CHARACTER
+      if (!(ALPHABETS_CAP.some(char => char === event.key) || ALPHABETS.some(char => char === event.key)
+       || FULLNAME_SPECIAL_CHAR.some(spcialChar => spcialChar === event.key))) {
         return false;
       }
       let name = document.getElementById('fullName').value;
@@ -63,14 +68,12 @@
         return false;
       }
       let nameCharArray = name.split("");
-      let lastChar = nameCharArray.pop();
       // dont allow space after SPACE
-      if (name != "" && lastChar == " " && event.key == " ") {
+      if (name != "" && nameCharArray[nameCharArray.length - 1] == " " && event.key == " ") {
         return false;
       }
 
       let nameArray = name.split(" ");
-      console.log("nameArray:    " + nameArray);
       if (event.key == " " && nameArray.some(word => word.length < 4)) {
         alert("Enter valid Name [Each word should contain at least 4 character]");
         return false;
@@ -80,7 +83,43 @@
         return false;
       }
     }
-    // Real time validation
+    // Real time validation on email
+    function validateEmail(event) {
+      let email = document.getElementById('email').value;
+      // Allow DIGITS & CHARACTER & '@' & '.' & '_' & '-' && Backspace && Tab
+      if (!(DIGITS.some(num => num.toString() === event.key) || ALPHABETS_CAP.some(char => char === event.key)
+        || ALPHABETS.some(char => char === event.key) || EMAIL_SPECIAL_CHAR.some(spcialChar => spcialChar === event.key))) {
+        return false;
+      }
+
+      // Don't allow '@' or '.' as first Char of Email
+      if (email.length === 0 &&  (event.key === '@' || event.key === '.')) {
+        return false;
+      }
+
+      let emailCharArray = email.split('');
+      // Allow only one '@' in email
+      if (emailCharArray.length > 0) {
+        if (emailCharArray.indexOf('@') !== -1 && event.key === '@') {
+          return false;
+        }
+        // '@' && '.' should not come  continously
+        if (emailCharArray[emailCharArray.length-1] === '@' && event.key === '.') {
+          return false;
+        }
+        // Don't allow two '.' continously
+        if (emailCharArray[emailCharArray.length-1] === '.' && event.key === '.') {
+          return false;
+        }
+         // abc@gmail = ['abc','gmail']
+        let arr = email.split('@');
+        // Don't allow two '.' after '@'
+        if (arr.length > 1 && arr[1].split('').indexOf('.') !== -1 && event.key === '.') {
+          return false;
+        }
+      }
+    }
+    // Real time validation on PhoneNo
     function validatePhoneNo(event) {
       let phoneNo = document.getElementById('phoneNo').value;
       // alert('phoneNo: '+ phoneNo);
@@ -168,7 +207,6 @@
           phoneBelongToState.innerHTML = '';
         }
       }
-
     }
 
     // Validate FORM on SUBMIT
@@ -177,13 +215,58 @@
       // console.log("document" + JSON.stringify(document.forms.myForm.value));
       let fullName = document.forms.myForm.fullName.value
       // Remove white_spaces
-      fullName = fullName.trim();
+      // fullName = fullName.trim();
       // IF Full Name EMPTY
       if (fullName == "") {
         alert("Please enter the Name [Name Should not EMPTY]")
         return false;
       }
 
+      let fullNameCharArray = fullName.split('');
+      // Allow CHARACTER & FullName specific Special CHARACTER
+      let isFullNameWithValideChar = fullNameCharArray.every((element) => {
+        if (ALPHABETS_CAP.some(char => char === element) || ALPHABETS.some(char => char === element)
+        || FULLNAME_SPECIAL_CHAR.some(spcialChar => spcialChar === element)) {
+          return true;
+        } else {
+          return false
+        }
+      });
+
+      if (!isFullNameWithValideChar) {
+        alert("Enter the valid Name [Should contain only ALPHABETICS CHARACTER & SPACE]");
+        return false;
+      }
+      // Full should be of two words
+      let fullNameArray = fullName.split(' ');
+      console.log('fullNameArray: ', fullNameArray);
+      if (fullNameArray[0] === '') {
+        alert("Enter valid Name [Should not have ' '(white_spaces) at START]")
+        return false;
+      }
+      if (fullNameArray[fullNameArray.length - 1] === '') {
+        alert("Enter valid Name [Should not have ' '(white_spaces) at END]")
+        return false;
+      }
+      // Multiple space not allow
+      if (fullNameArray.some(element => element === "")) {
+        alert("Enter valid Name [Should not have multiple ' ' (white_spaces) between two words]")
+        return false;
+      }
+      if (fullNameArray.length != 2) {
+        alert("Enter valid Name [Should be of two words]")
+        return false;
+      }
+      // IF CHARACTER of WORD less than 4
+      let checkChar = fullNameArray.some(function(word) {
+        return word.length < 4;
+      })
+      if (checkChar) {
+        alert("Enter valid Name [Each word with min 4 chars]")
+        return false;
+      }
+
+      // EMAIL Validation on SUBMIT
       let email = document.forms.myForm.email.value
       // Remove white_spaces
       email = email.trim();
@@ -196,11 +279,18 @@
       // String is converted into character array using split
       let emailArray = email.split('');
       if (emailArray.length > 0) {
-
-        // IF SPACE is exist in Email
-        if (emailArray.indexOf(" ") !== -1) {
-          alert("Enter the valid Email [SPACE is not allowed]");
-          return false;
+        // Allow DIGITS & CHARACTER & EMAIL specific Special Symbols
+        let isEmailWithValideChar = emailArray.every((element) => {
+          if (DIGITS.some(num => num.toString() == element) || ALPHABETS_CAP.some(char => char === element)
+          || ALPHABETS.some(char => char === element) || EMAIL_SPECIAL_CHAR.some(spcialChar => spcialChar === element)) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+        if (!isEmailWithValideChar) {
+          alert("Enter the valid Email [DIGITS & CHARACTER & EMAIL specific Special Symbols '@','.','-','_']");
+          return false
         }
 
         // IF @ is missing in Email
@@ -214,26 +304,129 @@
           alert("Enter the valid Email [. is missing]");
           return false;
         }
-
+        // '.' not allowed  at end
+        if (emailArray[emailArray.length-1] === '.') {
+          alert("Enter the valid Email ['.' is not allowed at end]");
+          return false;
+        }
+        // '@' not allowed  at end
+        if (emailArray[emailArray.length-1] === '@') {
+          alert("Enter the valid Email ['@' is not allowed at end]");
+          return false;
+        }
         //If "." is exact after @
-        if (emailArray.indexOf(".") > emailArray.indexOf("@")) {
-          if (emailArray.indexOf(".") - emailArray.indexOf("@") == 1) {
-            alert("Enter the valid Email  ['@' & '.' continously not allowed]")
+        let arr = email.split('@');
+        if (arr.length === 1) {
+          alert("Enter the valid Email  ['.' should be there after '@' not continously but definately as '@gmail.com']");
+          return false;
+        }
+        // There should be one CHAR before '@'
+        if (!(arr[0].split('').some(char => isNaN(char)))) {
+          alert("Enter the valid Email [There should be one CHAR before '@']");
+          return false;
+        }
+        if (arr.length > 1) {
+          if (arr.length !== 2) {
+            alert("Enter the valid Email  [Only one '@'is allowed]");
+            return false;
+          }
+          // '@' & '.' continously not allowed
+          if (arr[1].split('')[0] === '.') {
+            alert("Enter the valid Email  ['@' & '.' continously not allowed]");
+            return false;
+          }
+          if (arr[1].split('.').length === 1) {
+            alert("Enter the valid Email [There should be one '.' expected after '@']");
+            return false;
+          }
+          //should be one '.' one after '@'
+          if (arr[1].split('.').length > 2) {
+            alert("Enter the valid Email [There should be only one '.' expected after '@']");
+            return false;
+          }
+          // There should be one CHAR before '.'
+          if (!(arr[1].split('.')[0].split('').some(char => isNaN(char)))) {
+            alert("Enter the valid Email [There should be one CHAR before '.']");
+            return false;
+          }
+          // There should be one CHAR after '.'
+          if (!(arr[1].split('.')[1].split('').some(char => isNaN(char)))) {
+            alert("Enter the valid Email [There should be one CHAR after '.']");
             return false;
           }
         }
-
       }
-
+      // PhoneNo VALIDATION
       let phoneNo = document.forms.myForm.phoneNo.value
-      phoneNo = phoneNo.trim()
+      // phoneNo = phoneNo.trim()
       if (phoneNo == "") {
         alert("Enter the Phone Number [Phone Number should not EMPTY]")
         return false;
       }
 
-      if (phoneNo.length !== 12) {
-        alert('Enter valid Phone Number [number should be of 10 digit]');
+      let phoneNoCharArray = phoneNo.split('');
+      let isPhoneNoWithValideChar = phoneNoCharArray.every(element => {
+        if (DIGITS.some(char => char == element) || PHONENO_SPECIAL_CHAR.some(char => char === element)) {
+          return true;
+        } else {
+          return false;
+        }
+      })
+      if (!isPhoneNoWithValideChar) {
+        alert("Enter valid Phone Number [Should allow only DIGITS and '-']");
+        return false;
+      }
+
+      let phoneNoArray = phoneNo.split('-');
+
+      if (phoneNoArray.length !== 3) {
+        alert("Enter valid Phone Number [Should be with proper format (987-654-3210)]")
+        return false;
+      }
+      if (phoneNoArray[0].length !== 3) {
+        alert("Enter valid Phone Number [There should be THREE digits before FIRST '-' as '987-']")
+        return false;
+      }
+
+      if (phoneNoArray[0] >= 621 && phoneNoArray[0] <= 799) {
+        let phoneCompany = document.getElementById('phoneCompany')
+        phoneCompany.innerHTML = 'Relance Jio';
+      }
+      // if the 3 digits fall between 801 - 920, then its Idea
+      else if (phoneNoArray[0] >= 801 && phoneNoArray[0] <= 920) {
+        let phoneCompany = document.getElementById('phoneCompany')
+        phoneCompany.innerHTML = 'Idea';
+      }
+      // if the 3 digits fall between 921 - 999 then its Vodafone
+      else if (phoneNoArray[0] >= 921 && phoneNoArray[0] <= 999) {
+        let phoneCompany = document.getElementById('phoneCompany')
+        phoneCompany.innerHTML = 'Vodafone';
+      } else {
+        let phoneCompany = document.getElementById('phoneCompany')
+        phoneCompany.innerHTML = 'Invalid No.';
+        alert("Enter valid Phone Number [First three digit should be between 621 - 999]")
+        return false;
+      }
+
+      if (phoneNoArray[1].length !== 3) {
+        alert("Enter valid Phone Number [There should be THREE digits after FIRST '-' and SECOND '-' as '987-654-']")
+        return false;
+      }
+      if (phoneNoArray[1] >= 000 && phoneNoArray[1] <= 300) {
+        let phoneBelongToState = document.getElementById('phoneBelongToState')
+        phoneBelongToState.innerHTML = 'Himachal';
+      } else if (phoneNoArray[1] >= 301 && phoneNoArray[1] <= 600) {
+        let phoneBelongToState = document.getElementById('phoneBelongToState')
+        phoneBelongToState.innerHTML = 'Kerla';
+      } else if (phoneNoArray[1] >= 601 && phoneNoArray[1] <= 900) {
+        let phoneBelongToState = document.getElementById('phoneBelongToState')
+        phoneBelongToState.innerHTML = 'Maharashtra';
+      } else if (phoneNoArray[1] >= 901 && phoneNoArray[1] <= 999) {
+        let phoneBelongToState = document.getElementById('phoneBelongToState')
+        phoneBelongToState.innerHTML = 'Gujrat';
+      }
+      if (phoneNoArray[2].length !== 4) {
+        alert("Enter valid Phone Number [There should be FOUR digits after SECOND '-' as '987-654-3210']")
         return false;
       }
 
@@ -243,7 +436,6 @@
         phoneNo + ", please enter in the following box and submit for confirmation:");
 
       alert('Validation Successful!');
-
     }
 
     // Reset labels
@@ -267,7 +459,7 @@
         <input id="fullName" type="text" name="fullName" value="" placeholder="Fullname" onkeydown="return validateFullName(event)"><br>
 
         <label for="Email">Email:-</label><br>
-        <input type="text" name="email" value="" placeholder="Email"><br>
+        <input id="email" type="text" name="email" value="" placeholder="abc@gmail.com" onkeydown="return validateEmail(event)"><br>
 
         <label for="Phone Number">Phone Number:-</label><br>
         <input id="phoneNo" type="text" name="phoneNo" value="" placeholder="987-654-3210" onkeydown="return validatePhoneNo(event)">
@@ -287,5 +479,4 @@
     </form>
   </div>
 </body>
-
 </html>
