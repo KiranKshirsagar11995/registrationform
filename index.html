@@ -48,12 +48,6 @@
     }
   </style>
   <script>
-    /** Note:
-     * 000 - 300 : Himachal
-     * 301 - 600 : Kerla
-     * 601 - 900 : Maharashtra
-     * 901 - 999 : Gujrat
-     */
     let DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     let ALPHABETS_CAP = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
     let ALPHABETS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
@@ -61,10 +55,14 @@
     let FULLNAME_SPECIAL_CHAR = [' ', 'Backspace', 'Tab', 'Enter', 'Delete', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'];
     let EMAIL_SPECIAL_CHAR = ['@', '.', '-', '_', 'Backspace', 'Tab', 'Enter', 'Delete', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'];
     let PHONENO_SPECIAL_CHAR = ['-', 'Backspace', 'Tab', 'Enter']
+    let STATES = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
+      'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Orissa', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Tripura',
+      'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+    ]
     // Real time validation on FullName
-    function validateFullName(event) {
-      let fullNameMessage = document.getElementById('fullNameMessage')
-      fullNameMessage.innerHTML = '';
+    function validateFullNameOnKeyDown(event) {
+      let fullNameErrorMessage = document.getElementById('fullNameErrorMessage')
+      fullNameErrorMessage.innerHTML = '';
 
       // Allow CHARACTER & FullName specific Special CHARACTER
       if (!(ALPHABETS_CAP.some(char => char === event.key) || ALPHABETS.some(char => char === event.key) ||
@@ -85,7 +83,7 @@
       let nameArray = name.split(" ");
       if (event.key == " " && nameArray.some(word => word.length < 4)) {
         // alert("Enter valid Name [Each word should contain at least 4 character]");
-        fullNameMessage.innerHTML = 'Each word should contain at least 4 character';
+        fullNameErrorMessage.innerHTML = 'Each word should contain at least 4 character';
         return false;
       }
       // dont allow SPACE after two words
@@ -94,9 +92,9 @@
       }
     }
     // Real time validation on email
-    function validateEmail(event) {
-      let emailMessage = document.getElementById('emailMessage')
-      emailMessage.innerHTML = '';
+    function validateEmailOnKeyDown(event) {
+      let emailErrorMessage = document.getElementById('emailErrorMessage')
+      emailErrorMessage.innerHTML = '';
 
       let email = document.getElementById('email').value;
       // Allow DIGITS & CHARACTER & '@' & '.' & '_' & '-' && Backspace && Tab
@@ -111,8 +109,8 @@
       }
 
       let emailCharArray = email.split('');
-      // After @ we should not allow INTEGER
-      if (emailCharArray.some(char => char === '@') && DIGITS.some(num => num.toString() === event.key)) {
+      // After . we should not allow INTEGER
+      if (emailCharArray.some(char => char === '.') && DIGITS.some(num => num.toString() === event.key)) {
         return false;
       }
 
@@ -138,11 +136,17 @@
       }
     }
     // Real time validation on PhoneNo
-    function validatePhoneNo(event) {
-      let phoneNoMessage = document.getElementById('phoneNoMessage')
-      phoneNoMessage.innerHTML = '';
+    function validatePhoneNoOnKeyDown(event) {
+      let phoneNoErrorMessage = document.getElementById('phoneNoErrorMessage')
+      phoneNoErrorMessage.innerHTML = '';
 
       let phoneNo = document.getElementById('phoneNo').value;
+
+      phoneNo = phoneNo.split('').filter(char => {
+        if (char !== '(' && char !== ')') return char;
+      }).join('');
+
+      let formatedPhoneNo = phoneNo;
       // alert('phoneNo: '+ phoneNo);
       if (!(event.key === 'Backspace' || event.key === 'Tab')) {
         // Allow only DIGITS(0-9)
@@ -169,22 +173,17 @@
             phoneCompany.innerHTML = 'Vodafone';
           } else {
             let phoneCompany = document.getElementById('phoneCompany')
-            phoneNoMessage.innerHTML = "First three digit should be between 621 - 999"
+            phoneNoErrorMessage.innerHTML = "First three digit should be between 621 - 999"
             phoneCompany.innerHTML = 'Invalid No.';
 
           }
         }
-        // Provide '-' after 3 DIGIT
+        // Provide '(123)-' after 3 DIGIT
         if (phoneNo.length === 3) {
-          document.getElementById('phoneNo').value = phoneNo + '-';
+          formatedPhoneNo = formatedPhoneNo + '-'
+          // document.getElementById('phoneNo').value = phoneNo + '-';
         }
-        // For state
-        /** Note:
-         * 000 - 300 : Himachal
-         * 301 - 600 : Kerla
-         * 601 - 900 : Maharashtra
-         * 901 - 999 : Gujrat
-         */
+
         // Provide STATE NAME
         if (phoneNo.length === 6) {
           // '435-457'  = 435-45' + '7'
@@ -193,32 +192,30 @@
           let strArray = str.split('-');
           // '457'      =       ['435', '457'][1]
           let numberBelongsState = strArray[1];
-          if (numberBelongsState >= 000 && numberBelongsState <= 300) {
-            let phoneBelongToState = document.getElementById('phoneBelongToState')
-            phoneBelongToState.innerHTML = 'Himachal';
-          } else if (numberBelongsState >= 301 && numberBelongsState <= 600) {
-            let phoneBelongToState = document.getElementById('phoneBelongToState')
-            phoneBelongToState.innerHTML = 'Kerla';
-          } else if (numberBelongsState >= 601 && numberBelongsState <= 900) {
-            let phoneBelongToState = document.getElementById('phoneBelongToState')
-            phoneBelongToState.innerHTML = 'Maharashtra';
-          } else if (numberBelongsState >= 901 && numberBelongsState <= 999) {
-            let phoneBelongToState = document.getElementById('phoneBelongToState')
-            phoneBelongToState.innerHTML = 'Gujrat';
-          }
+
+          phoneBelongToState.innerHTML = STATES[Math.floor(numberBelongsState / 33)]
+
         }
 
         // Provide '-' after 7 DIGIT
         if (phoneNo.length === 7) {
-          document.getElementById('phoneNo').value = phoneNo + '-';
+          formatedPhoneNo = formatedPhoneNo + '-';
+          // document.getElementById('phoneNo').value = phoneNo + '-';
         }
 
         // Not allow to ENTER after 10 DIGIT
         if (phoneNo.length === 12) {
           //  alert('You reach max limit [Phone no should be max 10 digit]');
-          //    let phoneNoMessage = document.getElementById('phoneNoMessage')
-          //phoneNoMessage.innerHTML = 'You reach max limit';
+          //    let phoneNoErrorMessage = document.getElementById('phoneNoErrorMessage')
+          //phoneNoErrorMessage.innerHTML = 'You reach max limit';
           return false;
+        }
+        if (phoneNo.length >= 3) {
+          formatedPhoneNo = formatedPhoneNo.split('-');
+          formatedPhoneNo[0] = '(' + formatedPhoneNo[0] + ')';
+          document.getElementById('phoneNo').value = formatedPhoneNo.join('-');
+        } else {
+          document.getElementById('phoneNo').value = formatedPhoneNo;
         }
       } else {
         // CLEAR TAGS phoneCompany
@@ -235,13 +232,191 @@
       }
     }
 
+    function validateFullNameOnBlur() {
+      let fullNameErrorMessage = document.getElementById('fullNameErrorMessage')
+      fullNameErrorMessage.innerHTML = ""
+
+      let fullName = document.getElementById('fullName').value
+      // Remove white_spaces
+      // fullName = fullName.trim();
+      // IF Full Name EMPTY
+      if (fullName == "") {
+        //  alert("Please enter the Name [Name Should not EMPTY]")
+        //    fullNameErrorMessage.innerHTML = "Name Should not EMPTY";
+        return true;
+      }
+
+      let fullNameCharArray = fullName.split('');
+      // Allow CHARACTER & FullName specific Special CHARACTER
+      let isFullNameWithValideChar = fullNameCharArray.every((element) => {
+        if (ALPHABETS_CAP.some(char => char === element) || ALPHABETS.some(char => char === element) ||
+          FULLNAME_SPECIAL_CHAR.some(spcialChar => spcialChar === element)) {
+          return true;
+        } else {
+          return false
+        }
+      });
+
+      if (!isFullNameWithValideChar) {
+        //alert("Enter the valid Name [Should contain only ALPHABETICS CHARACTER & SPACE]");
+        fullNameErrorMessage.innerHTML = "Name should contain only ALPHABETS & SPACE"
+        return false;
+      }
+      // Full should be of two words
+      let fullNameArray = fullName.split(' ');
+      console.log('fullNameArray: ', fullNameArray);
+      if (fullNameArray[0] === '') {
+        //  alert("Enter valid Name [Should not have ' '(white_spaces) at START]")
+        fullNameErrorMessage.innerHTML = "Name should not have (white_spaces) at start"
+        return false;
+      }
+      if (fullNameArray[fullNameArray.length - 1] === '') {
+        //  alert("Enter valid Name [Should not have ' '(white_spaces) at END]")
+        fullNameErrorMessage.innerHTML = "Name should not have (white_spaces) at end"
+        return false;
+      }
+      // Multiple space not allow
+      if (fullNameArray.some(element => element === "")) {
+        //  alert("Enter valid Name [Should not have multiple ' ' (white_spaces) between two words]")
+        fullNameErrorMessage.innerHTML = "Name should not have multiple (white_spaces) between two words"
+        return false;
+      }
+      // IF CHARACTER of WORD less than 4
+      let checkChar = fullNameArray.some(function(word) {
+        return word.length < 4;
+      })
+      if (checkChar) {
+        //alert("Enter valid Name [Each word with min 4 chars]")
+        fullNameErrorMessage.innerHTML = "Name has each word with min 4 chars"
+        return false;
+      }
+      if (fullNameArray.length != 2) {
+        //alert("Enter valid Name [Should be of two words]")
+        fullNameErrorMessage.innerHTML = "Name should be of two words"
+        return false;
+      }
+
+    }
+
+    function validateEmailOnBlur() {
+      let emailErrorMessage = document.getElementById('emailErrorMessage')
+      emailErrorMessage.innerHTML = ""
+
+      // EMAIL Validation on SUBMIT
+      let email = document.getElementById('email').value
+      // Remove white_spaces
+      email = email.trim();
+      // Email is blank
+      if (email == "") {
+        //  alert("Enter the Email [Email should not EMPTY]")
+        //  emailErrorMessage.innerHTML = "please enter the email "
+        return true;
+      }
+
+      // String is converted into character array using split
+      let emailArray = email.split('');
+      if (emailArray.length > 0) {
+        // Allow DIGITS & CHARACTER & EMAIL specific Special Symbols
+        let isEmailWithValideChar = emailArray.every((element) => {
+          if (DIGITS.some(num => num.toString() == element) || ALPHABETS_CAP.some(char => char === element) ||
+            ALPHABETS.some(char => char === element) || EMAIL_SPECIAL_CHAR.some(spcialChar => spcialChar === element)) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+        if (!isEmailWithValideChar) {
+          //  alert("Enter the valid Email [DIGITS & CHARACTER & EMAIL specific Special Symbols '@','.','-','_']");
+          emailErrorMessage.innerHTML = "email have digits & character & email specific Special Symbols '@', '.', '-', '_'"
+          return false
+        }
+
+        // IF @ is missing in Email
+        if (emailArray.indexOf("@") === -1) {
+          //alert("Enter the valid Email [@ is missing]");
+          emailErrorMessage.innerHTML = " '@' is missing"
+          return false;
+        }
+
+        //If "." is missing in Email
+        if (emailArray.indexOf(".") === -1) {
+          //alert("Enter the valid Email [. is missing]");
+          emailErrorMessage.innerHTML = "Enter the valid Email '.' is missing"
+          return false;
+        }
+        // '.' not allowed  at end
+        if (emailArray[emailArray.length - 1] === '.') {
+          //alert("Enter the valid Email ['.' is not allowed at end]");
+          emailErrorMessage.innerHTML = " '.' is not allowed at end"
+          return false;
+        }
+        // '@' not allowed  at end
+        if (emailArray[emailArray.length - 1] === '@') {
+          //  alert("Enter the valid Email ['@' is not allowed at end]");
+          emailErrorMessage.innerHTML = "Enter the valid Email '@' is not allowed at end"
+          return false;
+        }
+        //If "." is exact after @
+        let arr = email.split('@');
+        // if (arr.length === 1) {
+        //   //  alert("Enter the valid Email  ['.' should be there after '@' not continously but definately as '@gmail.com']");
+        //   emailErrorMessage.innerHTML = "There '.' should be there after '@' not continously but definately as '@gmail.com'"
+        //   return false;
+        // }
+        // There should be one CHAR before '@'
+        if (!(arr[0].split('').some(char => isNaN(char)))) {
+          //alert("Enter the valid Email [There should be one CHAR before '@']");
+          emailErrorMessage.innerHTML = "There should be one CHAR before '@'"
+          return false;
+        }
+        if (arr.length > 1) {
+          if (arr.length !== 2) {
+            //alert("Enter the valid Email  [Only one '@'is allowed]");
+            emailErrorMessage.innerHTML = "Only one '@'is allowed"
+            return false;
+          }
+          // '@' & '.' continously not allowed
+          if (arr[1].split('')[0] === '.') {
+            //alert("Enter the valid Email  ['@' & '.' continously not allowed]");
+            emailErrorMessage.innerHTML = "'@' & '.' continously not allowed"
+            return false;
+          }
+          if (arr[1].split('.').length === 1) {
+            //  alert("Enter the valid Email [There should be one '.' expected after '@']");
+            emailErrorMessage.innerHTML = "There should be one '.' expected after '@'"
+            return false;
+          }
+          //should be one '.' one after '@'
+          if (arr[1].split('.').length > 2) {
+            //  alert("Enter the valid Email [There should be only one '.' expected after '@']");
+            emailErrorMessage.innerHTML = "There should be only one '.' expected after '@'"
+            return false;
+          }
+          // There should be CHAR and Symbols before '.'
+          // if (!(arr[1].split('.')[0].split('').every(char => isNaN(char)))) {
+          //   //alert("Enter the valid Email [There should be one CHAR before '.']");
+          //   emailErrorMessage.innerHTML = "digits are not allow after '@'"
+          //   return false;
+          // }
+          // There should be CHAR and symbols after '.'
+          if (!(arr[1].split('.')[1].split('').every(char => isNaN(char)))) {
+            //alert("Enter the valid Email [There should be one CHAR after '.']");
+            emailErrorMessage.innerHTML = "digits are not allow after '.'"
+            return false;
+          }
+        }
+      }
+    }
+
     // Validate FORM on SUBMIT
     function validateForm() {
-      let fullNameMessage = document.getElementById('fullNameMessage')
-      let phoneNoMessage = document.getElementById('phoneNoMessage')
-      let emailMessage = document.getElementById('emailMessage')
-      // fullNameMessage.innerHTML = ""
 
+      let fullNameErrorMessage = document.getElementById('fullNameErrorMessage')
+      fullNameErrorMessage.innerHTML = ""
+      let emailErrorMessage = document.getElementById('emailErrorMessage')
+      emailErrorMessage.innerHTML = ""
+      let phoneNoErrorMessage = document.getElementById('phoneNoErrorMessage')
+      phoneNoErrorMessage.innerHTML = ""
 
       // console.log("document" + document.forms);
       // console.log("document" + JSON.stringify(document.forms.myForm.value));
@@ -251,7 +426,7 @@
       // IF Full Name EMPTY
       if (fullName == "") {
         //  alert("Please enter the Name [Name Should not EMPTY]")
-        fullNameMessage.innerHTML = "Name Should not EMPTY";
+        fullNameErrorMessage.innerHTML = "Name Should not EMPTY";
         return false;
       }
 
@@ -268,7 +443,7 @@
 
       if (!isFullNameWithValideChar) {
         //alert("Enter the valid Name [Should contain only ALPHABETICS CHARACTER & SPACE]");
-        fullNameMessage.innerHTML = "Name should contain only ALPHABETS & SPACE"
+        fullNameErrorMessage.innerHTML = "Name should contain only ALPHABETS & SPACE"
         return false;
       }
       // Full should be of two words
@@ -276,23 +451,23 @@
       console.log('fullNameArray: ', fullNameArray);
       if (fullNameArray[0] === '') {
         //  alert("Enter valid Name [Should not have ' '(white_spaces) at START]")
-        fullNameMessage.innerHTML = "Name should not have (white_spaces) at start"
+        fullNameErrorMessage.innerHTML = "Name should not have (white_spaces) at start"
         return false;
       }
       if (fullNameArray[fullNameArray.length - 1] === '') {
         //  alert("Enter valid Name [Should not have ' '(white_spaces) at END]")
-        fullNameMessage.innerHTML = "Name should not have (white_spaces) at end"
+        fullNameErrorMessage.innerHTML = "Name should not have (white_spaces) at end"
         return false;
       }
       // Multiple space not allow
       if (fullNameArray.some(element => element === "")) {
         //  alert("Enter valid Name [Should not have multiple ' ' (white_spaces) between two words]")
-        fullNameMessage.innerHTML = "Name should not have multiple (white_spaces) between two words"
+        fullNameErrorMessage.innerHTML = "Name should not have multiple (white_spaces) between two words"
         return false;
       }
       if (fullNameArray.length != 2) {
         //alert("Enter valid Name [Should be of two words]")
-        fullNameMessage.innerHTML = "Name should be of two words"
+        fullNameErrorMessage.innerHTML = "Name should be of two words"
         return false;
       }
       // IF CHARACTER of WORD less than 4
@@ -301,7 +476,7 @@
       })
       if (checkChar) {
         //alert("Enter valid Name [Each word with min 4 chars]")
-        fullNameMessage.innerHTML = "Name has each word with min 4 chars"
+        fullNameErrorMessage.innerHTML = "Name has each word with min 4 chars"
         return false;
       }
 
@@ -312,7 +487,7 @@
       // Email is blank
       if (email == "") {
         //  alert("Enter the Email [Email should not EMPTY]")
-        emailMessage.innerHTML = "please enter the email "
+        emailErrorMessage.innerHTML = "please enter the email "
         return false;
       }
 
@@ -330,92 +505,96 @@
         });
         if (!isEmailWithValideChar) {
           //  alert("Enter the valid Email [DIGITS & CHARACTER & EMAIL specific Special Symbols '@','.','-','_']");
-          emailMessage.innerHTML = "email have digits & character & email specific Special Symbols '@','.','-','_'"
+          emailErrorMessage.innerHTML = "email have digits & character & email specific Special Symbols '@', '.', '-', '_'"
           return false
         }
 
         // IF @ is missing in Email
         if (emailArray.indexOf("@") === -1) {
           //alert("Enter the valid Email [@ is missing]");
-          emailMessage.innerHTML = "Enter the valid Email '@' is missing]"
+          emailErrorMessage.innerHTML = " '@' is missing"
           return false;
         }
 
         //If "." is missing in Email
         if (emailArray.indexOf(".") === -1) {
           //alert("Enter the valid Email [. is missing]");
-          emailMessage.innerHTML = "Enter the valid Email '.' is missing"
+          emailErrorMessage.innerHTML = "Enter the valid Email '.' is missing"
           return false;
         }
         // '.' not allowed  at end
         if (emailArray[emailArray.length - 1] === '.') {
           //alert("Enter the valid Email ['.' is not allowed at end]");
-          emailMessage.innerHTML = "enter the valid Email '.' is not allowed at end"
+          emailErrorMessage.innerHTML = " '.' is not allowed at end"
           return false;
         }
         // '@' not allowed  at end
         if (emailArray[emailArray.length - 1] === '@') {
           //  alert("Enter the valid Email ['@' is not allowed at end]");
-          emailMessage.innerHTML = "Enter the valid Email '@' is not allowed at end"
+          emailErrorMessage.innerHTML = "Enter the valid Email '@' is not allowed at end"
           return false;
         }
         //If "." is exact after @
         let arr = email.split('@');
-        if (arr.length === 1) {
-          //  alert("Enter the valid Email  ['.' should be there after '@' not continously but definately as '@gmail.com']");
-          emailMessage.innerHTML = "There '.' should be there after '@' not continously but definately as '@gmail.com'"
-          return false;
-        }
+        // if (arr.length === 1) {
+        //   //  alert("Enter the valid Email  ['.' should be there after '@' not continously but definately as '@gmail.com']");
+        //   emailErrorMessage.innerHTML = "There '.' should be there after '@' not continously but definately as '@gmail.com'"
+        //   return false;
+        // }
         // There should be one CHAR before '@'
         if (!(arr[0].split('').some(char => isNaN(char)))) {
           //alert("Enter the valid Email [There should be one CHAR before '@']");
-          emailMessage.innerHTML = "There should be one CHAR before '@'"
+          emailErrorMessage.innerHTML = "There should be one CHAR before '@'"
           return false;
         }
         if (arr.length > 1) {
           if (arr.length !== 2) {
             //alert("Enter the valid Email  [Only one '@'is allowed]");
-            emailMessage.innerHTML = "Only one '@'is allowed"
+            emailErrorMessage.innerHTML = "Only one '@'is allowed"
             return false;
           }
           // '@' & '.' continously not allowed
           if (arr[1].split('')[0] === '.') {
             //alert("Enter the valid Email  ['@' & '.' continously not allowed]");
-            emailMessage.innerHTML = "'@' & '.' continously not allowed"
+            emailErrorMessage.innerHTML = "'@' & '.' continously not allowed"
             return false;
           }
           if (arr[1].split('.').length === 1) {
             //  alert("Enter the valid Email [There should be one '.' expected after '@']");
-            emailMessage.innerHTML = "There should be one '.' expected after '@'"
+            emailErrorMessage.innerHTML = "There should be one '.' expected after '@'"
             return false;
           }
           //should be one '.' one after '@'
           if (arr[1].split('.').length > 2) {
             //  alert("Enter the valid Email [There should be only one '.' expected after '@']");
-            emailMessage.innerHTML = "There should be only one '.' expected after '@'"
+            emailErrorMessage.innerHTML = "There should be only one '.' expected after '@'"
             return false;
           }
           // There should be CHAR and Symbols before '.'
-          if (!(arr[1].split('.')[0].split('').every(char => isNaN(char)))) {
-            //alert("Enter the valid Email [There should be one CHAR before '.']");
-            emailMessage.innerHTML = "digits are not allow after '@'"
-            return false;
-          }
+          // if (!(arr[1].split('.')[0].split('').every(char => isNaN(char)))) {
+          //   //alert("Enter the valid Email [There should be one CHAR before '.']");
+          //   emailErrorMessage.innerHTML = "digits are not allow after '@'"
+          //   return false;
+          // }
           // There should be CHAR and symbols after '.'
           if (!(arr[1].split('.')[1].split('').every(char => isNaN(char)))) {
             //alert("Enter the valid Email [There should be one CHAR after '.']");
-            emailMessage.innerHTML = "digits are not allow after '@'"
+            emailErrorMessage.innerHTML = "digits are not allow after '.'"
             return false;
           }
         }
       }
       // PhoneNo VALIDATION
       let phoneNo = document.forms.myForm.phoneNo.value
-
+      phoneNo = phoneNo.split('').filter(char => {
+        if (char !== '(' && char !== ')') {
+          return char;
+        }
+      }).join('');
       // phoneNo = phoneNo.trim()
       if (phoneNo == "") {
         //alert("Enter the Phone Number [Phone Number should not EMPTY]")
-        phoneNoMessage.innerHTML = "Enter the Phone Number"
+        phoneNoErrorMessage.innerHTML = "Enter the Phone Number"
         return false;
       }
 
@@ -429,7 +608,7 @@
       })
       if (!isPhoneNoWithValideChar) {
         //  alert("Enter valid Phone Number [Should allow only DIGITS and '-']");
-        phoneNoMessage.innerHTML = "Phone Number should allow only digits and '-']"
+        phoneNoErrorMessage.innerHTML = "Phone Number should allow only digits and '-'"
         return false;
       }
 
@@ -437,12 +616,12 @@
 
       if (phoneNoArray.length !== 3) {
         //alert("Enter valid Phone Number [Should be with proper format (987-654-3210)]")
-        phoneNoMessage.innerHTML = "Phone Number should have with proper format (987-654-3210)"
+        phoneNoErrorMessage.innerHTML = "Phone Number should have with proper format (987-654-3210)"
         return false;
       }
       if (phoneNoArray[0].length !== 3) {
         //alert("Enter valid Phone Number [There should be THREE digits before FIRST '-' as '987-']")
-        phoneNoMessage.innerHTML = "Phone Number  should have three digits before first '-' as '987-'"
+        phoneNoErrorMessage.innerHTML = "Phone Number  should have three digits before first '-' as '987-'"
         return false;
       }
 
@@ -463,40 +642,40 @@
         let phoneCompany = document.getElementById('phoneCompany')
         // phoneCompany.innerHTML = 'Invalid No.';
         // alert("Enter valid Phone Number [First three digit should be between 621 - 999]")
-        phoneNoMessage.innerHTML = "First three digit should be between 621 - 999"
+        phoneNoErrorMessage.innerHTML = "First three digit should be between 621 - 999"
         return false;
       }
 
       if (phoneNoArray[1].length !== 3) {
         //alert("Enter valid Phone Number [There should be THREE digits after FIRST '-' and SECOND '-' as '987-654-']")
-        phoneNoMessage.innerHTML = " Phone Number should have THREE digits after FIRST '-' and SECOND '-' as '987-654-'"
+        phoneNoErrorMessage.innerHTML = " Phone Number should have THREE digits after FIRST '-' and SECOND '-' as '987-654-'"
         return false;
       }
-      if (phoneNoArray[1] >= 000 && phoneNoArray[1] <= 300) {
-        let phoneBelongToState = document.getElementById('phoneBelongToState')
-        phoneBelongToState.innerHTML = 'Himachal';
-      } else if (phoneNoArray[1] >= 301 && phoneNoArray[1] <= 600) {
-        let phoneBelongToState = document.getElementById('phoneBelongToState')
-        phoneBelongToState.innerHTML = 'Kerla';
-      } else if (phoneNoArray[1] >= 601 && phoneNoArray[1] <= 900) {
-        let phoneBelongToState = document.getElementById('phoneBelongToState')
-        phoneBelongToState.innerHTML = 'Maharashtra';
-      } else if (phoneNoArray[1] >= 901 && phoneNoArray[1] <= 999) {
-        let phoneBelongToState = document.getElementById('phoneBelongToState')
-        phoneBelongToState.innerHTML = 'Gujrat';
-      }
+
+      phoneBelongToState.innerHTML = STATES[Math.floor(phoneNoArray[1] / 33)]
+
+
       if (phoneNoArray[2].length !== 4) {
         //  alert("Enter valid Phone Number [There should be FOUR digits after SECOND '-' as '987-654-3210']")
-        phoneNoMessage.innerHTML = "Phone Number should have FOUR digits after SECOND '-' as '987-654-3210'"
+        phoneNoErrorMessage.innerHTML = "Phone Number should have FOUR digits after SECOND '-' as '987-654-3210'"
         return false;
       }
 
       // ON SUCCESS
-      var person = prompt("Dear " + fullName +
+      let otp = prompt("Dear " + fullName +
         ", Thank you for your inquiry. A 4 digit verification number has been sent to your phone number:" +
         phoneNo + ", please enter in the following box and submit for confirmation:");
 
-      alert('Validation Successful!');
+      console.log('OTP: ', otp);
+      if (!otp || !otp.trim()) {
+        alert('Please enter OTP');
+        return false;
+      } else if (isNaN(otp)) {
+        alert('Please enter valid OTP');
+        return false;
+      } else {
+        alert('Validation Successful!');
+      }
     }
 
     // Reset labels
@@ -517,22 +696,21 @@
     <form class="" name=myForm action="http://pixel6.co/" method="post" autocomplete="off" onsubmit="return validateForm()">
       <div class="">
         <label for="FullName">FullName:-</label><br>
-        <input id="fullName" type="text" name="fullName" value="" placeholder="Fullname" onkeydown="return validateFullName(event)">
+        <input id="fullName" type="text" name="fullName" value="" placeholder="Fullname" onkeydown="return validateFullNameOnKeyDown(event)" onblur="validateFullNameOnBlur()">
         <div class="errorMessage">
-          <label id="fullNameMessage"></label>
+          <label id="fullNameErrorMessage"></label>
         </div>
         <label for="Email">Email:-</label><br>
-        <input id="email" type="text" name="email" value="" placeholder="abc@gmail.com" onkeydown="return validateEmail(event)"><br>
+        <input id="email" type="text" name="email" value="" placeholder="abc@gmail.com" onkeydown="return validateEmailOnKeyDown(event)" onblur="validateEmailOnBlur()"><br>
         <div class="errorMessage">
-          <label id="emailMessage"></label>
+          <label id="emailErrorMessage"></label>
         </div>
 
         <label for="Phone Number">Phone Number:-</label><br>
-        <input id="phoneNo" type="text" name="phoneNo" value="" placeholder="987-654-3210" onkeydown="return validatePhoneNo(event)">
+        <input id="phoneNo" type="text" name="phoneNo" value="" placeholder="987-654-3210" onkeydown="return validatePhoneNoOnKeyDown(event)">
 
         <div class="errorMessage">
-          <label id="phoneNoMessage"></label>
-
+          <label id="phoneNoErrorMessage"></label>
         </div>
         <div class="" style="text-align:right;">
           <label id="phoneCompany" style="color:red;padding:10px;font-style: italic;font-size: large;"></label>
