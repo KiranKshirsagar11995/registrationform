@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>OTP Page</title>
+</head>
+
+<body>
+  <h1 style="color:gray;">Validate OTP</h1>
+  <hr>
+  <br>
+  <h2 id="otpMessge" style="color:gray"></h2>
+  <br><br>
+  <form class="" action="http://pixel6.co" method="post" onsubmit="return validateForm()">
+    <label for=""><b>Enter OTP</b></label>
+    <input id="otp" type="text" name="" value="">
+    <button type="submit" name="button"> Submit OTP</button>
+    <!-- <div class=""> -->
+      <span id="otpErrorMessage" for=""></span>
+    <!-- </div> -->
+  </form>
+
+
+  <script type="text/javascript">
+    let message = "Dear <span style='color:blue;'>" + localStorage['name'] +
+      "</span>, Thank you for your inquiry. A 4 digit verification number has been sent to your phone number:<span style='color:blue;'>" +
+      localStorage['phoneNo'] + "</span>, please enter in the following box and submit for confirmation:";
+
+    document.getElementById('otpMessge').innerHTML = message;
+
+    function validateForm() {
+      let otpErrorMessage = document.getElementById('otpErrorMessage');
+      otpErrorMessage.innerHTML = ''
+
+      let otp = document.getElementById('otp').value
+      otp = otp.trim();
+      if (otp.length === 0) {
+        otpErrorMessage.innerHTML = "<span style='color:red;'><b>Please enter OTP</b></span>";
+        return false
+      }
+
+      if (isNaN(otp)) {
+        otpErrorMessage.innerHTML = "<span style='color:red;'><b>please enter valid OTP</b></span>";
+        return false
+      }
+
+      // On Validate Check For Correct output
+       if (localStorage.otp === otp) {
+        otpErrorMessage.innerHTML = "<span style='color:green;'><b>Validate Successfully</b></span>";
+      } else {
+        otpErrorMessage.innerHTML = "<span style='color:red;'><b>OTP you entered is invalid</b></span>";
+        return false;
+      }
+    }
+  </script>
+</body>
+
+</html>

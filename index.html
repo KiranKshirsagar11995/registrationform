@@ -55,9 +55,11 @@
     let FULLNAME_SPECIAL_CHAR = [' ', 'Backspace', 'Tab', 'Enter', 'Delete', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'];
     let EMAIL_SPECIAL_CHAR = ['@', '.', '-', '_', 'Backspace', 'Tab', 'Enter', 'Delete', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'];
     let PHONENO_SPECIAL_CHAR = ['-', 'Backspace', 'Tab', 'Enter']
-    let STATES = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
-      'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Orissa', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Tripura',
-      'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+    let STATES = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Andaman and Nicobar Islands(UT)', 'Bihar',
+      'Chandigarh(UT)', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu(UT)', 'Delhi(UT)', 'Goa',
+      'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir(UT)', 'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh(UT)',
+      'Lakshadweep(UT)', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Orissa', 'Punjab', 'Puducherry(UT)',
+      'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Tripura', 'Telangana', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
     ]
     // Real time validation on FullName
     function validateFullNameOnKeyDown(event) {
@@ -141,7 +143,7 @@
       phoneNoErrorMessage.innerHTML = '';
 
       let phoneNo = document.getElementById('phoneNo').value;
-
+      // Remove brackts temperorily
       phoneNo = phoneNo.split('').filter(char => {
         if (char !== '(' && char !== ')') return char;
       }).join('');
@@ -192,9 +194,7 @@
           let strArray = str.split('-');
           // '457'      =       ['435', '457'][1]
           let numberBelongsState = strArray[1];
-
-          phoneBelongToState.innerHTML = STATES[Math.floor(numberBelongsState / 33)]
-
+          phoneBelongToState.innerHTML = STATES[Math.floor(numberBelongsState / (1000/STATES.length))]
         }
 
         // Provide '-' after 7 DIGIT
@@ -652,7 +652,7 @@
         return false;
       }
 
-      phoneBelongToState.innerHTML = STATES[Math.floor(phoneNoArray[1] / 33)]
+      phoneBelongToState.innerHTML = STATES[Math.floor(phoneNoArray[1]/(1000/STATES.length))]
 
 
       if (phoneNoArray[2].length !== 4) {
@@ -662,20 +662,23 @@
       }
 
       // ON SUCCESS
-      let otp = prompt("Dear " + fullName +
-        ", Thank you for your inquiry. A 4 digit verification number has been sent to your phone number:" +
-        phoneNo + ", please enter in the following box and submit for confirmation:");
-
-      console.log('OTP: ', otp);
-      if (!otp || !otp.trim()) {
-        alert('Please enter OTP');
-        return false;
-      } else if (isNaN(otp)) {
-        alert('Please enter valid OTP');
-        return false;
-      } else {
-        alert('Validation Successful!');
-      }
+      localStorage["name"] = document.forms.myForm.fullName.value;
+      localStorage["phoneNo"] = document.forms.myForm.phoneNo.value;
+      localStorage["otp"] = document.forms.myForm.phoneNo.value.split('-')[2];
+      // let otp = prompt("Dear " + fullName +
+      //   ", Thank you for your inquiry. A 4 digit verification number has been sent to your phone number:" +
+      //   phoneNo + ", please enter in the following box and submit for confirmation:");
+      //
+      // console.log('OTP: ', otp);
+      // if (!otp || !otp.trim()) {
+      //   alert('Please enter OTP');
+      //   return false;
+      // } else if (isNaN(otp)) {
+      //   alert('Please enter valid OTP');
+      //   return false;
+      // } else {
+      //   alert('Validation Successful!');
+      // }
     }
 
     // Reset labels
@@ -693,7 +696,7 @@
     <h1><u>Registration</u></h1>
     <p>Please fill in this form:-</p>
     <hr>
-    <form class="" name=myForm action="http://pixel6.co/" method="post" autocomplete="off" onsubmit="return validateForm()">
+    <form class="" name=myForm action="otp.html" method="post" autocomplete="off" onsubmit="return validateForm()">
       <div class="">
         <label for="FullName">FullName:-</label><br>
         <input id="fullName" type="text" name="fullName" value="" placeholder="Fullname" onkeydown="return validateFullNameOnKeyDown(event)" onblur="validateFullNameOnBlur()">
